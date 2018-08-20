@@ -33,9 +33,13 @@ no_segs=len(segments)
 #parameters
 temp_inc=0
 matt_inc=2
-Bound_width=7
-Bound_height=7
+Bound_width=5
+Bound_height=5
 threshold=0.7
+scale_low=95
+scale_high=105
+rotate_low=-5
+rotate_high=+5
 
 count=0
 for segment in segments:
@@ -55,16 +59,33 @@ for segment in segments:
         #cv2.waitKey(0)
         #cv2.destroyAllWindows()
         w_m,h_m=matt.shape[::-1]
+        cols=w_m
+        rows=h_m
+        matt_aug=[]
+        for i in range(scale_low,scale_high+1,1):
+            res = cv2.resize(matt,None,fx=float(i/100), fy=float(i/100), interpolation = cv2.INTER_CUBIC)
+            matt_aug.append(res)
+            print(i)
+    
+        for i in range(rotate_low,rotate_high+1,1):
+            M = cv2.getRotationMatrix2D(((cols-1)/2.0,(rows-1)/2.0),i,1)
+            dst = cv2.warpAffine(matt,M,(cols,rows))
+            matt_aug.append(dst)
+            print(i)
+
+        
         print(w," ",h," ")
         print(w_m," ",h_m)
-        if(w+Bound_width>w_m>=w and h+Bound_height>h_m>=h):
-            res = cv2.matchTemplate(matt,template,cv2.TM_CCOEFF_NORMED)
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-            mx=max(res.flatten())
-            loc = np.where( res == mx)
-            print("loc",loc)
-            if(max(res.flatten())>threshold):
-                cv2.rectangle(img, (seg[0],seg[1]), ( seg[2] , seg[3]), (0,0,255), 2)
+
+        for matt1 in matt_aug:
+            
+            if(w+Bound_width>w_m>=w and h+Bound_height>h_m>=h):
+                try:
+                    res = cv2.matchTemplate(matt1,template,cv2.TM_CCOEFF_NORMED)
+                    if(max(res.flatten())>threshold):
+                        cv2.rectangle(img, (seg[0],seg[1]), ( seg[2] , seg[3]), (0,0,255), 2)
+                except:
+                    continue
 
     cv2.namedWindow("output", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("output", (int(img.shape[1]), int(img.shape[0])))
