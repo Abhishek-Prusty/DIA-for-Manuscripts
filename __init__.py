@@ -300,7 +300,7 @@ class DocImage:
     #ret3,th1 = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     #show_img('otsuThreshold after adaptive', th1)
 
-    img = blur
+    img = th1
 
     boxes_temp = np.zeros(img.shape[:2],np.uint8)
     #logging.info("boxes generated")
