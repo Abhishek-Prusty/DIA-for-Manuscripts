@@ -20,13 +20,20 @@ for i in range(len(segments)):
 data=np.array(data)
 data2=np.array(data2)
 
-thresh = 3
+thresh = 20
 clusters = hcluster.fclusterdata(data2, thresh, criterion="distance")
-print(clusters)
+print((clusters))
+
+print(len(data2))
+no_clusters=len(set(clusters))
+lines=[]
+cl=clusters[198:217]
+
 
 plt.scatter(*np.transpose(data), c=clusters,cmap="rainbow")
+#plt.scatter()
 plt.axis("equal")
-title = "threshold: %f, number of clusters: %d" % (thresh, len(set(clusters)))
+title = "thresh: %f, no. clu: %d" % (thresh, no_clusters)
 plt.title(title)
 plt.show()
 

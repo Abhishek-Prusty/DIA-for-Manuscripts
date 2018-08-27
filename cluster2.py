@@ -20,7 +20,7 @@ for i in range(len(segments)):
 data=np.array(data)
 data2=np.array(data2)
 
-cluster = AgglomerativeClustering(n_clusters=20, affinity='manhattan', linkage='average')  
+cluster = AgglomerativeClustering(n_clusters=100, affinity='manhattan', linkage='average')  
 cluster.fit_predict(data2)
 print(cluster.labels_)
 plt.scatter(data[:,0],data[:,1], c=cluster.labels_, cmap='rainbow') 

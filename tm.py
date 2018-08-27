@@ -27,9 +27,9 @@ segments=sorted(segments,key=lambda x:(x[1]*x[0]))
 
 #print(segments[0])
 
-print(len(segments))
+#print(len(segments))
 no_segs=len(segments)
-
+segments=segments[15:]
 #parameters
 temp_inc=0
 matt_inc=2
@@ -67,7 +67,7 @@ for segment in segments:
             try:
                 res = cv2.resize(matt,None,fx=float(i/100), fy=float(i/100), interpolation = cv2.INTER_CUBIC)
                 matt_aug.append(res)
-                print(i)
+                #print(i)
             except:
                 continue
     
@@ -76,32 +76,27 @@ for segment in segments:
                 M = cv2.getRotationMatrix2D(((cols-1)/2.0,(rows-1)/2.0),i,1)
                 dst = cv2.warpAffine(matt,M,(cols,rows))
                 matt_aug.append(dst)
-                print(i)
+                #print(i)
             except:
                 continue
-
-
         
-        print(w," ",h," ")
-        print(w_m," ",h_m)
+        #print(w," ",h," ")
+        #print(w_m," ",h_m)
 
         for matt1 in matt_aug:
-            
             if(w+Bound_width>w_m>=w and h+Bound_height>h_m>=h):
                 try:
                     res = cv2.matchTemplate(matt1,template,cv2.TM_CCOEFF_NORMED)
                     if(max(res.flatten())>threshold):
-                        cv2.rectangle(img, (seg[0],seg[1]), ( seg[2] , seg[3]), (0,0,255), 2)
-                except:
-                    
-                    res = cv2.matchTemplate(matt,template,cv2.TM_CCOEFF_NORMED)
-                    if(max(res.flatten())>threshold):
-                        cv2.rectangle(img, (seg[0],seg[1]), ( seg[2] , seg[3]), (0,0,255), 2)
+                        cv2.rectangle(img, (seg[0],seg[1]),( seg[2] , seg[3]), (0,0,255), 2)
 
-                finally:
-                    res = cv2.matchTemplate(matt,template,cv2.TM_CCOEFF_NORMED)
-                    if(max(res.flatten())>threshold):
-                        cv2.rectangle(img, (seg[0],seg[1]), ( seg[2] , seg[3]), (0,0,255), 2)
+                except:
+                        try:
+                            res = cv2.matchTemplate(template,matt1,cv2.TM_CCOEFF_NORMED)
+                            if(max(res.flatten())>threshold):
+                                cv2.rectangle(img, (seg[0],seg[1]), ( seg[2] , seg[3]), (0,0,255), 2)
+                        except:
+                            continue
 
 
     cv2.namedWindow("output", cv2.WINDOW_NORMAL)
