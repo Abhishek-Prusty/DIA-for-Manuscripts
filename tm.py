@@ -23,12 +23,18 @@ img2=cv2.imread(imgs2,0)
 with open('segments.pkl','rb') as f:
     segments=pkl.load(f)
 
-mn=999999999999
-mn=999999999999
-mx=-999999999999
+
+mxw=-999999999999
+mxh=-999999999999
 
 for i in range(len(segments)):
-    mx=max(mx,)
+    mxw=max(mxw,segments[i][2]-segments[i][0])
+    mxh=max(mxh,segments[i][3]-segments[i][1])
+
+#print(mxw,"   ",mxh)
+
+
+
 #print(segments[0])
 segments=sorted(segments,key=lambda x:(x[1]))
 segments=sorted(segments,key=lambda x:(x[1]*x[0]))
@@ -40,14 +46,14 @@ no_segs=len(segments)
 segments=segments[15:]
 #parameters
 temp_inc=1
-matt_inc=5
+matt_inc=1
 Bound_width=5
 Bound_height=5
 threshold=0.7
-scale_low=95
-scale_high=105
-rotate_low=-1
-rotate_high=+1
+scale_low=97
+scale_high=103
+rotate_low=-3
+rotate_high=3
 count=0
 
 
@@ -104,49 +110,29 @@ for segment in segments:
     img2=cv2.imread(imgs2,0)
     #template=img2[(1-int(temp_inc/100))*segment[1]:(1+int(temp_inc/100))*segment[3],(1-int(temp_inc/100))*segment[0]:(1+int(temp_inc/100))*segment[2]]
     template=img2[segment[1]-temp_inc:segment[3]+temp_inc,segment[0]-temp_inc:segment[2]+temp_inc]
+    template=cv2.resize(template,(mxw,mxh))
     cv2.imshow("template",template)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-    w, h = template.shape[::-1]
+    #w, h = template.shape[::-1]
     matches=list()
     count=0
     for seg in segments:
         #matt=img2[(1-int(matt_inc/100))*seg[1]:(1+int(matt_inc/100))*seg[3],(1-int(matt_inc/100))*seg[0]:(1+int(matt_inc/100))*seg[2]]
         matt=img2[seg[1]-matt_inc:seg[3]+matt_inc,seg[0]-matt_inc:seg[2]+matt_inc]
-        
-        w_m,h_m=matt.shape[::-1]
-        #templat=cv2.resize(template,(w_m,h_m))
-        cols=w_m
-        rows=h_m
-        if(w<w_m and w+20>w_m and h<h_m and h+20>h_m):
-            print("orig")
-            
-            res = cv2.matchTemplate(matt,template,cv2.TM_CCOEFF_NORMED)
-            #print(res)
-            if(max(res.flatten())>threshold):
-                cv2.rectangle(img, (seg[0],seg[1]),( seg[2] , seg[3]), (0,0,255), 2)
-            
-            
-            '''
-            res=jaccard_similarity_score(matt,template)
-            if(res>0.5):
-                cv2.rectangle(img, (seg[0],seg[1]),( seg[2] , seg[3]), (0,0,255), 2)
-            '''
-            '''
-            res=ssim(matt, template,data_range=template.max() - template.min())
-            if(res>0.5):
-                cv2.rectangle(img, (seg[0],seg[1]),( seg[2] , seg[3]), (0,0,255), 2)
-            '''
+        matt=cv2.resize(matt,(mxw,mxh))
 
         for matt1 in matt_aug[count]:
-            if(w<w_m and w+20>w_m and h<h_m and h+20>h_m):
+            matt1=cv2.resize(matt1,(mxw,mxh))
+            if(1):
                 #cv2.imshow("matt1",matt1)
                 #cv2.waitKey(0)
                 #cv2.destroyAllWindows()
                 try:
 
                     print("1")
-                    
+                    matt1=cv2.resize(matt1,(mxw,mxh))
+                    template=cv2.resize(template,(mxw,mxh))
                     res = cv2.matchTemplate(matt1,template,cv2.TM_CCOEFF_NORMED)
                     #print(res)
                     if(max(res.flatten())>threshold):
@@ -161,7 +147,8 @@ for segment in segments:
                 except:
                         try:
                             print("2")
-                            
+                            matt1=cv2.resize(matt1,(mxw,mxh))
+                            template=cv2.resize(template,(mxw,mxh))
                             res = cv2.matchTemplate(template,matt1,cv2.TM_CCOEFF_NORMED)
                             #print(res)
                             if(max(res.flatten())>threshold):
