@@ -27,7 +27,6 @@ print((clusters))
 print(len(data2))
 no_clusters=len(set(clusters))
 lines=[]
-cl=clusters[198:217]
 
 
 plt.scatter(*np.transpose(data), c=clusters,cmap="rainbow")
