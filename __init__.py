@@ -345,7 +345,7 @@ class DocImage:
     #        logging.info("factorx:"+str(factorX)+"factory:"+str(factorY))
 
     # Bounds are a guess work, more can be on it.
-    lower_bound = totalArea / 20000
+    lower_bound = totalArea / 8000
     upper_bound = totalArea / 10
     
     ret,thresh = cv2.threshold(mask.copy(),127,255,0)

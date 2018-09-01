@@ -44,18 +44,19 @@ segments=sorted(segments,key=lambda x:(x[1]*x[0]))
 
 #print(len(segments))
 no_segs=len(segments)
-segments=segments[13:]
+segments=segments[8:]
 #parameters
 temp_inc=1
 matt_inc=1
 Bound_width=5
 Bound_height=5
-threshold=0.5
 scale_low=97
 scale_high=103
 rotate_low=-3
 rotate_high=3
 count=0
+threshold=0.5
+iou_thresh=0.5
 
 
 
@@ -105,6 +106,18 @@ def skel(img):
             done = True
     return skel
 
+def IOU(boxA, boxB):
+    xA = max(boxA[0], boxB[0])
+    yA = max(boxA[1], boxB[1])
+    xB = min(boxA[2], boxB[2])
+    yB = min(boxA[3], boxB[3])
+    interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+    boxAArea = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
+    boxBArea = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
+    iou = interArea / float(boxAArea + boxBArea - interArea)
+    return iou
+
+
 print("template matching")
 #print(matt_aug)
 for segment in segments:
@@ -113,13 +126,13 @@ for segment in segments:
     img2=cv2.imread(imgs2,0)
     #template=img2[(1-int(temp_inc/100))*segment[1]:(1+int(temp_inc/100))*segment[3],(1-int(temp_inc/100))*segment[0]:(1+int(temp_inc/100))*segment[2]]
     template=img2[segment[1]-temp_inc:segment[3]+temp_inc,segment[0]-temp_inc:segment[2]+temp_inc]
+    cv2.imshow("template",template)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
     template=skel(template)
     template=cv2.resize(template,(mxw,mxh))
     
     #val,template = cv2.threshold(template,100,255,cv2.THRESH_BINARY)
-    cv2.imshow("template",template)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
     count=0
 
     for seg in segments:
@@ -135,9 +148,26 @@ for segment in segments:
             matt1=cv2.resize(matt1,(mxw,mxh))
             #val,matt1 = cv2.threshold(matt1,100,255,cv2.THRESH_BINARY)
 
+
             template=cv2.resize(template,(mxw,mxh))
             res = cv2.matchTemplate(matt1,template,cv2.TM_CCOEFF_NORMED)
-            if(max(res.flatten())>threshold):
+            segment_=segment.copy()
+            seg_=seg.copy()
+            segment_[2]-=segment_[0]
+            segment_[3]-=segment_[1]
+            segment_[0]-=segment_[0]
+            segment_[1]-=segment_[1]
+            
+
+            seg_[2]-=seg_[0]
+            seg_[3]-=seg_[1]
+            seg_[0]-=seg_[0]
+            seg_[1]-=seg_[1]
+            
+            iou=IOU(segment_,seg_)
+            
+            if(max(res.flatten())>=threshold and iou>=iou_thresh) :
+                #print("iou : ",iou)
                 cv2.rectangle(img, (seg[0],seg[1]),( seg[2] , seg[3]), (0,0,255), 2)
 
             '''
@@ -149,7 +179,6 @@ for segment in segments:
         count=count+1
     
 
-    #plt.show()
     cv2.namedWindow("output", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("output", (int(img.shape[1]), int(img.shape[0])))
     cv2.imshow("output",img)
