@@ -170,12 +170,15 @@ for segment in segments:
                 #print("iou : ",iou)
                 cv2.rectangle(img, (seg[0],seg[1]),( seg[2] , seg[3]), (0,0,255), 2)
 
+
             '''
             res=jaccard_similarity_score(matt1.flatten(),template.flatten())
             #print(res)
             if(res>0.5):
                 cv2.rectangle(img, (seg[0],seg[1]),( seg[2] , seg[3]), (0,0,255), 2)
             '''
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        cv2.putText(img,"{:.1f}".format(float(res)),(int(seg[0]),int(seg[3])+5), font, 0.3,(255,0,0),1,cv2.LINE_AA)
         count=count+1
     
 
