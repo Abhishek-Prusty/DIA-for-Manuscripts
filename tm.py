@@ -7,6 +7,7 @@ import numpy as np
 import colorsys
 from sklearn.metrics import jaccard_similarity_score
 from skimage.measure import compare_ssim as ssim
+import matplotlib.pyplot as plt 
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--page", required=True,
@@ -85,27 +86,11 @@ def jacc(matt,template):
     res=jaccard_similarity_score(matt,template)
     return res
 
-'''
-def temp_match(S,T):
-
-    minSAD = 999999999999999999;
-    for x in range(0,s_cols-t_cols+1): 
-        for y in range(0,s_rows-t_rows+1):
-            SAD = 0.0;
-            for i in range(0,t_cols):
-                for j in range(0,t_rows):
-                    pixel p1 = S[y+i][x+j];
-                    pixel p2 = T[i][j];
-                    SAD += abs( p1 - p2 );
-
-            if ( minSAD > SAD ):
-                minSAD = SAD;
-    return minSAD
-'''
 
 print("template matching")
 #print(matt_aug)
 for segment in segments:
+
     img=cv2.imread(imgs,1)
     img2=cv2.imread(imgs2,0)
     #template=img2[(1-int(temp_inc/100))*segment[1]:(1+int(temp_inc/100))*segment[3],(1-int(temp_inc/100))*segment[0]:(1+int(temp_inc/100))*segment[2]]
@@ -115,12 +100,23 @@ for segment in segments:
     cv2.imshow("template",template)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+    fig, axs = plt.subplots(20, 20)
+    axs[0,0].imshow(template,cmap='gray')
+    axs[0,0].axis('off')
     count=0
+    cc=0
+    count1=0
     for seg in segments:
         #matt=img2[(1-int(matt_inc/100))*seg[1]:(1+int(matt_inc/100))*seg[3],(1-int(matt_inc/100))*seg[0]:(1+int(matt_inc/100))*seg[2]]
         matt=img2[seg[1]-matt_inc:seg[3]+matt_inc,seg[0]-matt_inc:seg[2]+matt_inc]
         matt=cv2.resize(matt,(mxw,mxh))
-
+        if(count<19 and cc<20):
+            axs[cc,count1+1].imshow(matt,cmap='gray')
+            axs[cc,count1+1].axis('off')
+        else:
+            count1=0
+            cc+=1
+        count2=1
         for matt1 in matt_aug[count]:
 
             #cv2.imshow("matt1",matt1)
@@ -134,21 +130,26 @@ for segment in segments:
             res = cv2.matchTemplate(matt1,template,cv2.TM_CCOEFF_NORMED)
             if(max(res.flatten())>threshold):
                 cv2.rectangle(img, (seg[0],seg[1]),( seg[2] , seg[3]), (0,0,255), 2)
+
             
+
             '''
             res=jaccard_similarity_score(matt1.flatten(),template.flatten())
             #print(res)
             if(res>0.5):
                 cv2.rectangle(img, (seg[0],seg[1]),( seg[2] , seg[3]), (0,0,255), 2)
             '''
+            count2+=1
         count=count+1
+        count1+=1
+    
 
+    #plt.show()
     cv2.namedWindow("output", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("output", (int(img.shape[1]), int(img.shape[0])))
     cv2.imshow("output",img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
 
     
 
