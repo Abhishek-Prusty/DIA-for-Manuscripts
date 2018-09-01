@@ -50,7 +50,7 @@ temp_inc=1
 matt_inc=1
 Bound_width=5
 Bound_height=5
-threshold=0.65
+threshold=0.5
 scale_low=97
 scale_high=103
 rotate_low=-3
@@ -86,6 +86,24 @@ def jacc(matt,template):
     res=jaccard_similarity_score(matt,template)
     return res
 
+def skel(img):
+    size = np.size(img)
+    skel = np.zeros(img.shape,np.uint8)
+    ret,img = cv2.threshold(img,127,255,0)
+    element = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
+    done = False
+     
+    while( not done):
+        eroded = cv2.erode(img,element)
+        temp = cv2.dilate(eroded,element)
+        temp = cv2.subtract(img,temp)
+        skel = cv2.bitwise_or(skel,temp)
+        img = eroded.copy()
+     
+        zeros = size - cv2.countNonZero(img)
+        if zeros==size:
+            done = True
+    return skel
 
 print("template matching")
 #print(matt_aug)
@@ -95,28 +113,19 @@ for segment in segments:
     img2=cv2.imread(imgs2,0)
     #template=img2[(1-int(temp_inc/100))*segment[1]:(1+int(temp_inc/100))*segment[3],(1-int(temp_inc/100))*segment[0]:(1+int(temp_inc/100))*segment[2]]
     template=img2[segment[1]-temp_inc:segment[3]+temp_inc,segment[0]-temp_inc:segment[2]+temp_inc]
+    template=skel(template)
     template=cv2.resize(template,(mxw,mxh))
+    
     #val,template = cv2.threshold(template,100,255,cv2.THRESH_BINARY)
     cv2.imshow("template",template)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-    fig, axs = plt.subplots(20, 20)
-    axs[0,0].imshow(template,cmap='gray')
-    axs[0,0].axis('off')
     count=0
-    cc=0
-    count1=0
+
     for seg in segments:
         #matt=img2[(1-int(matt_inc/100))*seg[1]:(1+int(matt_inc/100))*seg[3],(1-int(matt_inc/100))*seg[0]:(1+int(matt_inc/100))*seg[2]]
         matt=img2[seg[1]-matt_inc:seg[3]+matt_inc,seg[0]-matt_inc:seg[2]+matt_inc]
         matt=cv2.resize(matt,(mxw,mxh))
-        if(count<19 and cc<20):
-            axs[cc,count1+1].imshow(matt,cmap='gray')
-            axs[cc,count1+1].axis('off')
-        else:
-            count1=0
-            cc+=1
-        count2=1
         for matt1 in matt_aug[count]:
 
             #cv2.imshow("matt1",matt1)
@@ -131,17 +140,13 @@ for segment in segments:
             if(max(res.flatten())>threshold):
                 cv2.rectangle(img, (seg[0],seg[1]),( seg[2] , seg[3]), (0,0,255), 2)
 
-            
-
             '''
             res=jaccard_similarity_score(matt1.flatten(),template.flatten())
             #print(res)
             if(res>0.5):
                 cv2.rectangle(img, (seg[0],seg[1]),( seg[2] , seg[3]), (0,0,255), 2)
             '''
-            count2+=1
         count=count+1
-        count1+=1
     
 
     #plt.show()
