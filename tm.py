@@ -44,7 +44,7 @@ segments=sorted(segments,key=lambda x:(x[1]*x[0]))
 
 #print(len(segments))
 no_segs=len(segments)
-segments=segments[8:]
+#segments=segments[8:]
 #parameters
 temp_inc=1
 matt_inc=1
@@ -52,11 +52,11 @@ Bound_width=5
 Bound_height=5
 scale_low=97
 scale_high=103
-rotate_low=-3
-rotate_high=3
+rotate_low=0
+rotate_high=0
 count=0
-threshold=0.5
-iou_thresh=0.5
+threshold=0.35
+iou_thresh=0.4
 
 
 
